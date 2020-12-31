@@ -195,6 +195,7 @@ async function all() {
     }
     await showmsg();//通知	
   }
+  isLive = false;
 }
 
 
