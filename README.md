@@ -29,8 +29,8 @@
 ### 运行方式
 1. 下载所有文件
 2. 安装NODEJS
-3. 填写 'qqreadnode.js' 中 'qqreadbodyVal' 'qqreadtimeurlVal' 'qqreadtimeheaderVal' 的值以及通知服务 'sendNotify.js' 中的值
-4. 在文件夹中按Shift+鼠标右键点击 '在此处打开cmd窗口' 或 '在此处打开Powershell窗口'
+3. 填写 `qqreadnode.js` 中 `qqreadbodyVal` `qqreadtimeurlVal` `qqreadtimeheaderVal` 的值以及通知服务 `sendNotify.js` 中的值
+4. 在文件夹中按Shift+鼠标右键点击 `在此处打开cmd窗口` 或 `在此处打开Powershell窗口`
 5. 输入npm i
 6. 输入npm install node-schedule
 7. 输入node qqreadnode.js
