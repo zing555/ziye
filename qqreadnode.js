@@ -15,6 +15,7 @@ boxjs链接      https://raw.githubusercontent.com/ziye12/JavaScript/master/Task
 12.28 解决通知问题，notifyInterval     0为关闭通知，1为所有通知，2为12 23 点通知  ， 3为 6 12 18 23 点通知 
 12.28 增加 无通知时打印通知
 12.29 修复手机通知问题，增加外部推送开关
+1.1 修复签到问题
 
 
 ⚠️cookie获取方法：
@@ -61,7 +62,7 @@ let task, tz, kz, config = '';
 console.log(`\n========= 脚本执行时间(TM)：${new Date(new Date().getTime() + 0 * 60 * 60 * 1000).toLocaleString('zh', { hour12: false })} =========\n`)
 const notify = $.isNode() ? require("./sendNotify") : "";
 const schedule = require('node-schedule');
-const notifyttt = 1// 0为关闭外部推送，1为12 23 点外部推送
+const notifyttt = 0// 0为关闭外部推送，1为12 23 点外部推送
 const notifyInterval = 2;// 0为关闭通知，1为所有通知，2为12 23 点通知  ， 3为 6 12 18 23 点通知 
 const logs = 0;   //0为关闭日志，1为开启
 const maxtime = 10//每日上传时长限制，默认20小时
@@ -72,11 +73,9 @@ let isLive = false;
 
 
 //在``里面填写，多账号换行
-let qqreadbodyVal = ``;
-
-let qqreadtimeurlVal = ``;
-
-let qqreadtimeheaderVal = ``;
+let qqreadbodyVal = ``
+let qqreadtimeurlVal = ``
+let qqreadtimeheaderVal = ``
 
 let QQ_READ_COOKIES = {
   "qqreadbodyVal": qqreadbodyVal.split('\n'),
@@ -92,8 +91,6 @@ let scheduleCronstyle = () => {
     if (!isLive) {
       isLive = true;
       console.log("第" + (++start_count) + "次执行企鹅读书");
-      kz = "";
-      tz = "";
       all();
     }
   });
@@ -113,18 +110,19 @@ let scheduleCronstyle = () => {
   })
 
 
+
 async function all() {
   console.log(`==========🔔共${QQ_READ_COOKIES.qqreadbodyVal.length}个${jsname}账号🔔=========\n`);
   for (let i = 0; i < QQ_READ_COOKIES.qqreadbodyVal.length; i++) {
     nowTimes = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000 + 8 * 60 * 60 * 1000);
     daytime = new Date(new Date().toLocaleDateString()).getTime() - 8 * 60 * 60 * 1000;
-    tz = '';
-    kz = '';
+
     qqreadbodyVal = QQ_READ_COOKIES.qqreadbodyVal[i];
     qqreadtimeurlVal = QQ_READ_COOKIES.qqreadtimeurlVal[i];
     qqreadtimeheaderVal = QQ_READ_COOKIES.qqreadtimeheaderVal[i];
     O = (`${jsname + (i + 1)}🔔`);
-
+    tz = '';
+    kz = '';
     let cookie_is_live = await qqreadinfo(i + 1);//用户名
     if (!cookie_is_live) {
       QQ_READ_COOKIES.qqreadbodyVal.splice(i, 1);
@@ -134,6 +132,7 @@ async function all() {
       continue;
     }
     if (BOX == 0) {
+
       await qqreadtrack();//更新
       await qqreadconfig();//时长查询
       await qqreadwktime();//周时长查询
@@ -194,6 +193,7 @@ async function all() {
       }
     }
     await showmsg();//通知	
+
   }
   isLive = false;
 }
@@ -216,7 +216,7 @@ function showmsg() {
         $.msg(O, "", tz);
       }
 
-      if (notifyttt == 1 && $.isNode() && (nowTimes.getHours() === 12 || nowTimes.getHours() === 23) && (nowTimes.getMinutes() == 5))
+      if (notifyttt == 1 && $.isNode() && (nowTimes.getHours() === 12 || nowTimes.getHours() === 23) && (nowTimes.getMinutes() >= 0 && nowTimes.getMinutes() <= 10))
         await notify.sendNotify(O, tz);
 
     }
@@ -281,7 +281,7 @@ function qqreadinfo(account_count) {
         kz += "账号" + account_count + "COOKIE失效";
         tz += "账号" + account_count + "COOKIE失效";
         resolve(false);
-      }else{
+      } else {
         tz += `\n========== 【${info.data.user.nickName}】 ==========\n`;
         kz += `\n========== 【${info.data.user.nickName}】 ==========\n`;
         resolve(true);
@@ -352,16 +352,16 @@ function qqreaddayread() {
 function qqreadsign() {
   return new Promise((resolve, reject) => {
     const toqqreadsignurl = {
-      url: "https://mqqapi.reader.qq.com/mqq/red_packet/user/clock_in/page",
+      url: "https://mqqapi.reader.qq.com/mqq/red_packet/user/clock_in",
       headers: JSON.parse(qqreadtimeheaderVal),
       timeout: 60000,
     };
     $.get(toqqreadsignurl, (error, response, data) => {
       if (logs) $.log(`${O}, 金币签到: ${data}`);
       sign = JSON.parse(data);
-      if (sign.data.videoDoneFlag) {
-        tz += `【金币签到】:获得${sign.data.todayAmount}金币\n`;
-        kz += `【金币签到】:获得${sign.data.todayAmount}金币\n`;
+      if (sign.code == 0) {
+        tz += `【金币签到】:获得${sign.data.amount}金币\n`;
+        kz += `【金币签到】:获得${sign.data.amount}金币\n`;
       }
       resolve();
     });
